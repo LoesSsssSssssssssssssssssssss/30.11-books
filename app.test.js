@@ -4,6 +4,7 @@ const { resetWatchers } = require('nodemon/lib/monitor/watch');
 const expect = require('expect').default
 const request = require('supertest')
 
+let chai = require('chai');
 let jsonfile = require('jsonfile');
 let file = jsonfile.readFileSync('data.json');
 
@@ -17,15 +18,16 @@ describe('/GET book', () => {
               done();
             });
     })
-})
+});
 
 describe('/POST book', () => {
     it('should POST one book', done => {
         const book = {
           id: file.length,
           amount: 1,
-          name: "Name-of-book",
-          author: "Author"
+        name: "book-name",
+        author: "author-name",
+        year: "data-relis"
         }
 
         request(server)
@@ -42,37 +44,29 @@ describe('/POST book', () => {
     })
 });
 
-describe("/GET book :id", () => {
-    it('should GET book by id', done => {
+describe("/PUT book :id", () => {
+    const book = {
+        name: "HP",
+        author: "KK",
+        year: "1999"
+    }
+    it('should update book by PUT', done => {
         request(server)
-            .get('/book/0')
-            .send(JSON.stringify(file[0], null, '\t'))
+            .put('/book/2')
+            .send(book)
+                done()
+    })
+});
+
+describe('/DELETE/:id book', () => {
+    it('should delete a book', (done) => {
+        request(server)
+            .delete('/book/3')
             .expect(200)
-            .expect((res) => {
-                console.log(res.body)
-                expect((res.body).id).toStrictEqual(3)
-            })
             .end((err, res) => {
                 if (err) return done(err)
                 done()
             })
     })
-})
-
-describe("/PUT book :id", () => {
-    const book = {
-        name: "HP",
-        author: "KK",
-    }
-    it('should update book by PUT', done => {
-        request(server)
-            .put('/api/book/2')
-            .send(book)
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').eql("book has been edited")
-                done()
-            })
-    })
-})
+});
+ 
